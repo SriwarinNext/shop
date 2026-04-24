@@ -92,7 +92,7 @@
                 <h2 class="text-2xl font-bold mb-2">โรงเรียนศรีวารินทร์</h2>
                 <p class="text-gray-500 mb-6 text-sm">ระบบสั่งอาหารออนไลน์</p>
                 
-                <!-- Customer Button (No Login required) -->
+                <!-- Customer Button (Anonymous Login) -->
                 <button id="guestOrderBtn" class="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl px-4 py-3.5 hover:opacity-90 transition shadow-md font-bold text-lg mb-4">
                     <i class="fa-solid fa-utensils"></i>
                     สั่งอาหาร
@@ -109,10 +109,10 @@
                     เข้าสู่ระบบ (ร้านค้า/แอดมิน)
                 </button>
                 
-                <!-- Role Selector (For Demo/Testing Purposes only) -->
+                <!-- Role Selector (For testing specific Google role flows) -->
                 <div class="mt-6 text-left border-t pt-4">
-                    <p class="text-xs text-gray-400 mb-2">* สำหรับทดสอบระบบ Google Login: เลือกบทบาท</p>
-                    <select id="demoRoleSelect" class="w-full border rounded p-2 text-sm focus:ring-primary outline-none text-gray-600">
+                    <p class="text-xs text-gray-400 mb-2">* เลือกระดับสิทธิ์ก่อนเข้าสู่ระบบด้วย Google</p>
+                    <select id="authRoleSelect" class="w-full border rounded p-2 text-sm focus:ring-primary outline-none text-gray-600">
                         <option value="shop">ร้านค้า (Shop)</option>
                         <option value="admin">ผู้ดูแลระบบ (Admin)</option>
                     </select>
@@ -256,7 +256,7 @@
                 </div>
             </div>
             <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-6 text-sm text-yellow-700 rounded-r-lg">
-                <i class="fa-solid fa-circle-info mr-1"></i> นี่คือหน้าจำลองสำหรับ <b>บทบาท Admin</b> ในระบบจริงส่วนนี้จะใช้สำหรับเพิ่ม/ลบ สิทธิ์ของร้านค้าและลูกค้า
+                <i class="fa-solid fa-circle-info mr-1"></i> นี่คือหน้าการแสดงผลสำหรับ <b>บทบาท Admin</b> ใน V.2 ควรมีการจัดการสิทธิ์ผู้ใช้จากฐานข้อมูลจริง
             </div>
         </section>
 
@@ -493,34 +493,28 @@
     <!-- Firebase SDKs (Modular Version 11) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
-        // 1. CONFIGURATION & STATE
+        // 1. PRODUCTION CONFIGURATION (User provided)
         // ==========================================
-        
-        const isCanvasEnv = typeof __firebase_config !== 'undefined';
         const firebaseConfig = {
-          apiKey: "AIzaSyDv7hE5ZDilsL1b3S2gpDIqqMlRdU5ff0g",
-          authDomain: "sriwarin-shoping.firebaseapp.com",
-          projectId: "sriwarin-shoping",
-          storageBucket: "sriwarin-shoping.firebasestorage.app",
-          messagingSenderId: "233133001906",
-          appId: "1:233133001906:web:9492e390532d29bc008dab",
-          measurementId: "G-KRZDYVV65K"
+            apiKey: "AIzaSyDv7hE5ZDilsL1b3S2gpDIqqMlRdU5ff0g",
+            authDomain: "sriwarin-shoping.firebaseapp.com",
+            projectId: "sriwarin-shoping",
+            storageBucket: "sriwarin-shoping.firebasestorage.app",
+            messagingSenderId: "233133001906",
+            appId: "1:233133001906:web:9492e390532d29bc008dab",
+            measurementId: "G-KRZDYVV65K"
         };
-
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'school-delivery-app';
-        const getCollectionPath = (collectionName) => {
-                if (isCanvasEnv) return `artifacts/${appId}/public/data/${collectionName}`;
-                return collectionName; // ใช้บรรทัดนี้เมื่อนำเว็บไปรันจริงบน GitHub
-                };
+        // Production Collection Paths
+        const getCollectionPath = (collectionName) => collectionName;
 
         // Application State
         let currentUser = null;
@@ -655,90 +649,67 @@
         };
 
         // ==========================================
-        // 3. AUTHENTICATION
+        // 3. AUTHENTICATION (PRODUCTION)
         // ==========================================
         
-        const initAuth = async () => {
-            try {
-                if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else if (isCanvasEnv) {
-                    await signInAnonymously(auth); 
-                }
-            } catch (err) {
-                console.error("Auth Init Error:", err);
-            }
-        };
-
         // Guest Order Button (Customer - No Google Login required)
         document.getElementById('guestOrderBtn').addEventListener('click', async () => {
             toggleLoading(true);
             try {
-                sessionStorage.setItem('demoRole', 'customer');
+                sessionStorage.setItem('appRole', 'customer');
+                // ใช้ Anonymous Login เพื่อให้มี UID สำหรับบันทึกออเดอร์
                 if (!auth.currentUser) {
                     await signInAnonymously(auth);
+                } else {
+                    // ถ้าเคยล็อคอินอยู่แล้ว ให้ setup UI เลย
+                    currentRole = 'customer';
+                    setupRoleUI();
+                    toggleLoading(false);
                 }
-                currentRole = 'customer';
-                setupRoleUI();
             } catch (error) {
                 console.error("Guest login failed", error);
-                alert("เกิดข้อผิดพลาด: " + error.message);
+                alert("กรุณาเปิดใช้งาน Anonymous Provider ใน Firebase Console: " + error.message);
+                toggleLoading(false);
             }
-            toggleLoading(false);
         });
 
         // Google Login Button (Shop/Admin)
         document.getElementById('googleLoginBtn').addEventListener('click', async () => {
             toggleLoading(true);
             try {
-                sessionStorage.setItem('demoRole', document.getElementById('demoRoleSelect').value);
-                if (isCanvasEnv) {
-                    currentRole = sessionStorage.getItem('demoRole');
-                    setupRoleUI();
-                    toggleLoading(false);
-                } else {
-                    const provider = new GoogleAuthProvider();
-                    await signInWithPopup(auth, provider);
-                }
+                sessionStorage.setItem('appRole', document.getElementById('authRoleSelect').value);
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(auth, provider);
             } catch (error) {
-                console.error("Login failed", error);
-                alert("เกิดข้อผิดพลาด: " + error.message);
+                console.error("Google Login failed", error);
+                alert("เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google: " + error.message);
                 toggleLoading(false);
             }
         });
 
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            if (isCanvasEnv) {
-                sessionStorage.removeItem('demoRole');
-                if (menusUnsubscribe) menusUnsubscribe();
-                if (ordersUnsubscribe) ordersUnsubscribe();
-                
-                document.getElementById('userInfoHeader').classList.add('hidden');
-                document.getElementById('bottomNav').classList.add('hidden');
-                document.getElementById('floatingCartBtn').classList.add('hidden');
-                document.getElementById('roleTabs').classList.add('hidden');
-                document.getElementById('customerActiveOrderBanner').classList.add('hidden');
-                showView('loginView');
-            } else {
-                signOut(auth);
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            toggleLoading(true);
+            try {
+                await signOut(auth);
+                sessionStorage.removeItem('appRole');
+            } catch (error) {
+                console.error("Logout error", error);
             }
+            toggleLoading(false);
         });
 
-        initAuth();
         onAuthStateChanged(auth, (user) => {
             toggleLoading(true);
             if (user) {
                 currentUser = user;
-                const demoRole = sessionStorage.getItem('demoRole');
-                if (isCanvasEnv && !demoRole) {
-                    document.getElementById('userInfoHeader').classList.add('hidden');
-                    document.getElementById('bottomNav').classList.add('hidden');
-                    document.getElementById('floatingCartBtn').classList.add('hidden');
-                    document.getElementById('roleTabs').classList.add('hidden');
-                    document.getElementById('customerActiveOrderBanner').classList.add('hidden');
-                    showView('loginView');
+                const savedRole = sessionStorage.getItem('appRole');
+                if (savedRole) {
+                    currentRole = savedRole; 
+                    setupRoleUI();
                 } else {
-                    currentRole = demoRole || 'customer'; 
+                    // ถ้าไม่มี Role ถูกตั้งไว้ (กรณี refresh หน้าแล้ว state หาย)
+                    // อนุมานว่าเป็น customer ไว้ก่อนเพื่อความปลอดภัย
+                    currentRole = 'customer';
                     setupRoleUI();
                 }
             } else {
@@ -1065,14 +1036,14 @@
             try {
                 await addDoc(collection(db, getCollectionPath('orders')), orderData);
                 cart = [];
-                document.getElementById('orderNote').value = ''; // clear note
+                document.getElementById('orderNote').value = ''; 
                 updateCartUI();
                 toggleCartModal(false);
                 switchTab('customerOrders'); 
                 showToast("สั่งอาหารสำเร็จ! ร้านค้าได้รับออเดอร์แล้ว");
             } catch (error) {
                 console.error("Error adding order: ", error);
-                alert("เกิดข้อผิดพลาดในการสั่งอาหาร");
+                alert("เกิดข้อผิดพลาดในการสั่งอาหาร: " + error.message);
             }
             toggleLoading(false);
         };
@@ -1590,4 +1561,3 @@
     </script>
 </body>
 </html>
-
