@@ -522,6 +522,42 @@
         </div>
     </div>
 
+    <!-- Edit Shop Modal (Admin) -->
+    <div id="editShopModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl transform scale-95 transition-transform" id="editShopPanel">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-bold text-lg">แก้ไขข้อมูลร้านค้า</h2>
+                <button onclick="closeEditShopModal()" class="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="editShopForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อร้านค้า</label>
+                    <input type="text" id="editShopName" required class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-primary outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">อีเมลผู้ใช้งาน</label>
+                    <input type="email" id="editShopEmail" required class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-primary outline-none transition">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-xl font-bold shadow-md hover:opacity-90 mt-2 transition text-lg">บันทึกการแก้ไข</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Shop Modal -->
+    <div id="deleteShopConfirmModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-xs p-6 shadow-xl text-center transform scale-95 transition-transform" id="deleteShopConfirmPanel">
+            <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h2 class="font-bold text-lg mb-2 text-gray-800">ยืนยันการลบร้านค้า</h2>
+            <p class="text-sm text-gray-500 mb-6">คุณแน่ใจหรือไม่ว่าต้องการลบสิทธิ์ร้านค้านี้? (การดำเนินการนี้จะไม่ลบออเดอร์เก่าของร้าน)</p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteShopModal()" class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-bold hover:bg-gray-200 transition">ยกเลิก</button>
+                <button onclick="executeDeleteShop()" class="flex-1 bg-red-500 text-white py-2.5 rounded-xl font-bold hover:bg-red-600 transition">ลบร้านค้า</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDKs (Modular Version 11) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -867,13 +903,107 @@
                                 <h4 class="font-bold text-gray-800 text-sm">${data.shopName}</h4>
                                 <p class="text-xs text-gray-500"><i class="fa-regular fa-envelope"></i> ${data.email}</p>
                             </div>
-                            <span class="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">อนุมัติแล้ว</span>
+                            <div class="flex items-center gap-1">
+                                <span class="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold mr-1">อนุมัติแล้ว</span>
+                                <button onclick="openEditShopModal('${doc.id}', '${data.shopName}', '${data.email}')" class="text-xs text-yellow-500 hover:bg-yellow-50 w-7 h-7 flex items-center justify-center rounded-lg transition border border-transparent hover:border-yellow-100" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="confirmDeleteShop('${doc.id}')" class="text-xs text-red-500 hover:bg-red-50 w-7 h-7 flex items-center justify-center rounded-lg transition border border-transparent hover:border-red-100" title="ลบ"><i class="fa-solid fa-trash"></i></button>
+                            </div>
                         </div>
                     `;
                 });
             } catch (error) {
                 listEl.innerHTML = '<div class="text-center text-sm text-red-400 py-4">ดึงข้อมูลล้มเหลว</div>';
             }
+        };
+
+        // --- ADMIN SHOP EDIT/DELETE LOGIC ---
+        let shopToEditId = null;
+        let shopToDeleteId = null;
+
+        window.openEditShopModal = (shopId, shopName, email) => {
+            shopToEditId = shopId;
+            document.getElementById('editShopName').value = shopName;
+            document.getElementById('editShopEmail').value = email;
+            
+            const modal = document.getElementById('editShopModal');
+            const panel = document.getElementById('editShopPanel');
+            modal.classList.remove('hidden');
+            setTimeout(() => panel.classList.remove('scale-95'), 10);
+        };
+
+        window.closeEditShopModal = () => {
+            const modal = document.getElementById('editShopModal');
+            const panel = document.getElementById('editShopPanel');
+            panel.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 150);
+            shopToEditId = null;
+        };
+
+        document.getElementById('editShopForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!shopToEditId) return;
+            
+            const newName = document.getElementById('editShopName').value.trim();
+            const newEmail = document.getElementById('editShopEmail').value.trim().toLowerCase();
+
+            if (!newName || !newEmail) {
+                showToast("กรุณากรอกข้อมูลให้ครบถ้วน");
+                return;
+            }
+
+            toggleLoading(true);
+            try {
+                // เช็คอีเมลซ้ำกรณีเปลี่ยนอีเมลใหม่ (ยกเว้นเป็นอีเมลเดิมของตัวเอง)
+                const q = query(collection(db, getCollectionPath('users')), where("email", "==", newEmail));
+                const snapshot = await getDocs(q);
+                let emailExists = false;
+                snapshot.forEach(docSnap => {
+                    if(docSnap.id !== shopToEditId) emailExists = true;
+                });
+
+                if(emailExists) {
+                    showToast("อีเมลนี้มีอยู่ในระบบแล้ว ไม่สามารถใช้ซ้ำได้");
+                } else {
+                    await updateDoc(doc(db, getCollectionPath('users'), shopToEditId), {
+                        shopName: newName,
+                        email: newEmail
+                    });
+                    showToast("แก้ไขข้อมูลร้านค้าสำเร็จ");
+                    closeEditShopModal();
+                    fetchAdminShopList();
+                }
+            } catch (error) {
+                console.error("Edit shop error", error);
+                showToast("เกิดข้อผิดพลาดในการแก้ไข");
+            }
+            toggleLoading(false);
+        });
+
+        window.confirmDeleteShop = (shopId) => {
+            shopToDeleteId = shopId;
+            document.getElementById('deleteShopConfirmModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('deleteShopConfirmPanel').classList.remove('scale-95'), 10);
+        };
+
+        window.closeDeleteShopModal = () => {
+            document.getElementById('deleteShopConfirmPanel').classList.add('scale-95');
+            setTimeout(() => document.getElementById('deleteShopConfirmModal').classList.add('hidden'), 150);
+            shopToDeleteId = null;
+        };
+
+        window.executeDeleteShop = async () => {
+            if (!shopToDeleteId) return;
+            toggleLoading(true);
+            try {
+                await deleteDoc(doc(db, getCollectionPath('users'), shopToDeleteId));
+                showToast("ลบร้านค้าออกจากระบบสำเร็จ");
+                closeDeleteShopModal();
+                fetchAdminShopList();
+            } catch (error) {
+                console.error("Delete shop error", error);
+                showToast("เกิดข้อผิดพลาดในการลบร้านค้า");
+            }
+            toggleLoading(false);
         };
 
         // ==========================================
