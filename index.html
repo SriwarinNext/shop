@@ -145,6 +145,9 @@
             <div class="flex justify-between items-center mb-4">
                 <h2 class="font-bold text-lg text-gray-700" id="shopMenuHeaderTitle">จัดการเมนูอาหาร</h2>
                 <div class="flex gap-2">
+                    <button onclick="seedMockData()" class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm border hover:bg-gray-200 transition" title="เพิ่มข้อมูลจำลอง">
+                        <i class="fa-solid fa-magic"></i> ข้อมูลจำลอง
+                    </button>
                     <button onclick="toggleMenuModal(true)" class="bg-gradient-to-r from-primary to-secondary text-white px-3 py-1.5 rounded-lg text-sm shadow-sm hover:opacity-90 transition">
                         <i class="fa-solid fa-plus mr-1"></i> เพิ่มเมนู
                     </button>
@@ -162,7 +165,7 @@
             <!-- Shop Orders Sub-Tabs -->
             <div class="flex gap-2 mb-4 border-b">
                 <button onclick="switchShopOrderSubTab('active')" id="tabActiveOrders" class="pb-2 border-b-2 border-primary text-primary font-bold flex-1 text-sm transition">กำลังดำเนินการ <span id="orderBadge" class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1 hidden">0</span></button>
-                <button onclick="switchShopOrderSubTab('completed')" id="tabCompletedOrders" class="pb-2 border-b-2 border-transparent text-gray-500 font-bold flex-1 text-sm transition">สำเร็จแล้ว</button>
+                <button onclick="switchShopOrderSubTab('completed')" id="tabCompletedOrders" class="pb-2 border-b-2 border-transparent text-gray-500 font-bold flex-1 text-sm transition">สำเร็จ/ยกเลิก</button>
             </div>
 
             <div id="shopOrdersList" class="space-y-4">
@@ -422,7 +425,7 @@
     <div id="menuModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="font-bold text-lg">เพิ่ม/แก้ไขเมนู</h2>
+                <h2 class="font-bold text-lg" id="menuModalTitle">เพิ่ม/แก้ไขเมนู</h2>
                 <button onclick="toggleMenuModal(false)" class="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition"><i class="fa-solid fa-times"></i></button>
             </div>
             <form id="menuForm" class="space-y-4">
@@ -468,8 +471,38 @@
                     <input type="checkbox" id="menuAvailable" checked class="w-4 h-4 text-primary rounded accent-primary">
                     <label class="text-sm font-medium text-gray-700">เปิดขายทันที (ถ้าอยู่ในช่วงเวลา)</label>
                 </div>
-                <button type="submit" class="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-xl font-bold shadow-md hover:opacity-90 mt-2 transition text-lg">บันทึกเมนู</button>
+                <button type="submit" class="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-xl font-bold shadow-md hover:opacity-90 mt-2 transition text-lg">บันทึกข้อมูล</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Menu Modal -->
+    <div id="deleteMenuConfirmModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-xs p-6 shadow-xl text-center transform scale-95 transition-transform" id="deleteMenuConfirmPanel">
+            <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h2 class="font-bold text-lg mb-2 text-gray-800">ยืนยันการลบเมนู</h2>
+            <p class="text-sm text-gray-500 mb-6">คุณแน่ใจหรือไม่ว่าต้องการลบเมนูนี้? (การดำเนินการนี้ไม่สามารถย้อนกลับได้)</p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteMenuModal()" class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-bold hover:bg-gray-200 transition">ยกเลิก</button>
+                <button onclick="executeDeleteMenu()" class="flex-1 bg-red-500 text-white py-2.5 rounded-xl font-bold hover:bg-red-600 transition">ลบเมนู</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Cancel Order Modal -->
+    <div id="cancelOrderConfirmModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-xs p-6 shadow-xl text-center transform scale-95 transition-transform" id="cancelOrderConfirmPanel">
+            <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fa-solid fa-ban"></i>
+            </div>
+            <h2 class="font-bold text-lg mb-2 text-gray-800">ยกเลิกออเดอร์</h2>
+            <p class="text-sm text-gray-500 mb-6">คุณต้องการยกเลิกออเดอร์นี้ใช่หรือไม่?</p>
+            <div class="flex gap-3">
+                <button onclick="closeCancelOrderModal()" class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-bold hover:bg-gray-200 transition">ปิดหน้าต่าง</button>
+                <button onclick="executeCancelOrder()" class="flex-1 bg-red-500 text-white py-2.5 rounded-xl font-bold hover:bg-red-600 transition">ยืนยันการยกเลิก</button>
+            </div>
         </div>
     </div>
 
@@ -496,7 +529,25 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, getDocs, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, getDocs, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // 0. MOBILE AUDIO UNLOCKER
+        // ==========================================
+        // ทริกเกอร์เพื่อปลดล็อกระบบเสียงบนมือถือ เมื่อผู้ใช้แตะหน้าจอครั้งแรก
+        let audioUnlocked = false;
+        const unlockAudio = () => {
+            if (audioUnlocked) return;
+            const s1 = document.getElementById('orderAlertSound');
+            const s2 = document.getElementById('customerAlertSound');
+            if(s1) { s1.play().then(() => s1.pause()).catch(e => {}); }
+            if(s2) { s2.play().then(() => s2.pause()).catch(e => {}); }
+            audioUnlocked = true;
+            document.removeEventListener('click', unlockAudio);
+            document.removeEventListener('touchstart', unlockAudio);
+        };
+        document.addEventListener('click', unlockAudio);
+        document.addEventListener('touchstart', unlockAudio, { once: true });
 
         // ==========================================
         // 1. PRODUCTION CONFIGURATION
@@ -524,12 +575,12 @@
         // Application State
         let currentUser = null;
         let currentRole = 'customer'; 
-        let currentUserShopName = 'โรงอาหารกลาง'; // สำคัญสำหรับร้านค้า เพื่อแยกข้อมูล
+        let currentUserShopName = 'โรงอาหารกลาง'; 
         let menus = [];
         let cart = [];
         let myOrders = [];
         let shopOrders = [];
-        let allShops = []; // สำหรับแอดมินดูรายชื่อร้าน
+        let allShops = []; 
         
         let isInitialShopOrderLoad = true; 
         let isInitialCustomerOrderLoad = true;
@@ -662,13 +713,14 @@
         };
 
         // ==========================================
-        // 3. AUTHENTICATION & ROLE MANAGEMENT (REAL-WORLD)
+        // 3. AUTHENTICATION & ROLE MANAGEMENT 
         // ==========================================
         
         // 1. สั่งอาหารทันที (Customer - Anonymous)
         document.getElementById('guestOrderBtn').addEventListener('click', async () => {
             toggleLoading(true);
             try {
+                sessionStorage.setItem('appRole', 'customer');
                 if (!auth.currentUser || !auth.currentUser.isAnonymous) {
                     await signInAnonymously(auth);
                 } else {
@@ -689,7 +741,6 @@
             try {
                 const provider = new GoogleAuthProvider();
                 await signInWithPopup(auth, provider);
-                // การตรวจสอบสิทธิ์จะเกิดขึ้นใน onAuthStateChanged
             } catch (error) {
                 console.error("Google Login failed", error);
                 alert("เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google: " + error.message);
@@ -701,6 +752,7 @@
             toggleLoading(true);
             try {
                 await signOut(auth);
+                sessionStorage.removeItem('appRole');
             } catch (error) {
                 console.error("Logout error", error);
             }
@@ -713,7 +765,6 @@
             if (user) {
                 currentUser = user;
                 
-                // หากเป็นบัญชีชั่วคราว (กดสั่งอาหาร) ให้เป็นลูกค้าเลย
                 if (user.isAnonymous) {
                     currentRole = 'customer';
                     setupRoleUI();
@@ -721,7 +772,6 @@
                     return;
                 }
 
-                // หากล็อกอินด้วย Google ให้เช็คว่าเป็น Admin สูงสุดหรือไม่
                 if (user.email && user.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase()) {
                     currentRole = 'admin';
                     setupRoleUI();
@@ -729,21 +779,18 @@
                     return;
                 }
 
-                // หากไม่ใช่ Admin สูงสุด ให้ไปเช็คใน Database ว่าแอดมินเคยเพิ่มอีเมลร้านค้านี้ไว้ไหม
                 try {
                     const q = query(collection(db, getCollectionPath('users')), where("email", "==", user.email.toLowerCase()));
                     const snapshot = await getDocs(q);
                     
                     if (!snapshot.empty) {
-                        // เจออีเมลในระบบ แปลว่าแอดมินเพิ่มให้แล้ว
                         const userData = snapshot.docs[0].data();
-                        currentRole = userData.role; // 'shop'
-                        currentUserShopName = userData.shopName; // ชื่อร้านที่แอดมินตั้งให้
+                        currentRole = userData.role; 
+                        currentUserShopName = userData.shopName; 
                         setupRoleUI();
                     } else {
-                        // ไม่พบอีเมลในระบบ (แอดมินยังไม่ได้อนุมัติ/เพิ่มให้)
                         alert(`อีเมล (${user.email}) ยังไม่ได้รับสิทธิ์ให้เข้าสู่ระบบร้านค้า กรุณาติดต่อแอดมินเพื่อเพิ่มสิทธิ์ให้ร้านของคุณครับ`);
-                        await signOut(auth); // เตะออก
+                        await signOut(auth); 
                     }
                 } catch (error) {
                     console.error("Error checking role:", error);
@@ -779,14 +826,12 @@
 
             toggleLoading(true);
             try {
-                // เช็คก่อนว่ามีอีเมลนี้ในระบบแล้วหรือยัง
                 const q = query(collection(db, getCollectionPath('users')), where("email", "==", emailInput));
                 const snapshot = await getDocs(q);
                 
                 if (!snapshot.empty) {
                     showToast("อีเมลนี้มีอยู่ในระบบแล้ว!");
                 } else {
-                    // สร้างบัญชีร้านค้าใหม่ใน Database
                     await addDoc(collection(db, getCollectionPath('users')), {
                         email: emailInput,
                         shopName: nameInput,
@@ -796,7 +841,7 @@
                     showToast("✅ เพิ่มสิทธิ์ร้านค้าสำเร็จแล้ว!");
                     document.getElementById('newShopName').value = '';
                     document.getElementById('newShopEmail').value = '';
-                    fetchAdminShopList(); // โหลดข้อมูลใหม่
+                    fetchAdminShopList(); 
                 }
             } catch (error) {
                 console.error("Error adding shop:", error);
@@ -840,7 +885,6 @@
 
         window.seedMockData = async () => {
             toggleLoading(true);
-            // ให้เพิ่มข้อมูลโดยใช้ชื่อร้านที่ล็อคอินอยู่ (currentUserShopName)
             const shopName = currentRole === 'shop' ? currentUserShopName : "ร้านทดสอบ (แอดมินเพิ่ม)";
             
             const mockMenus = [
@@ -1093,6 +1137,34 @@
             }
         };
 
+        // --- CANCEL ORDER LOGIC ---
+        let orderToCancel = null;
+        window.cancelOrder = (orderId) => {
+            orderToCancel = orderId;
+            document.getElementById('cancelOrderConfirmModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('cancelOrderConfirmPanel').classList.remove('scale-95'), 10);
+        };
+
+        window.closeCancelOrderModal = () => {
+            document.getElementById('cancelOrderConfirmPanel').classList.add('scale-95');
+            setTimeout(() => document.getElementById('cancelOrderConfirmModal').classList.add('hidden'), 150);
+            orderToCancel = null;
+        };
+
+        window.executeCancelOrder = async () => {
+            if (!orderToCancel) return;
+            toggleLoading(true);
+            try {
+                await updateDoc(doc(db, getCollectionPath('orders'), orderToCancel), { status: 'cancelled' });
+                showToast("ยกเลิกออเดอร์แล้ว");
+                closeCancelOrderModal();
+            } catch (error) {
+                console.error("Cancel Error:", error);
+                showToast("เกิดข้อผิดพลาดในการยกเลิก");
+            }
+            toggleLoading(false);
+        };
+
         // --- ORDERS (CUSTOMER) ---
         window.submitOrder = async () => {
             if (cart.length === 0 || !currentUser) return;
@@ -1182,7 +1254,7 @@
                         }
                         previousCustomerOrderStatuses[doc.id] = data.status;
 
-                        if (data.status !== 'completed') {
+                        if (data.status !== 'completed' && data.status !== 'cancelled') {
                             hasActiveOrder = true;
                             activeOrderInfo = data;
                         }
@@ -1231,8 +1303,10 @@
                     paymentBadge = `<span class="${payColor} text-[10px] px-2 py-0.5 rounded border ml-2">${payText}</span>`;
                 }
 
+                const cancelBtnHTML = order.status === 'pending' ? `<div class="mt-2 pt-2 border-t border-dashed border-gray-100 text-right"><button onclick="cancelOrder('${order.id}')" class="text-[10px] text-red-500 border border-red-500 hover:bg-red-50 px-3 py-1 rounded-lg transition">ยกเลิกออเดอร์นี้</button></div>` : '';
+
                 list.innerHTML += `
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 relative overflow-hidden mb-3 transition hover:shadow-md">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 relative overflow-hidden mb-3 transition hover:shadow-md ${order.status === 'cancelled' ? 'opacity-60 grayscale' : ''}">
                         <div class="absolute left-0 top-0 bottom-0 w-1.5 ${statusInfo.border} z-10"></div>
                         
                         <div class="p-3 pl-4 border-b bg-gray-50 flex justify-between items-start cursor-pointer hover:bg-gray-100 transition" onclick="openCustomerReceipt('${order.id}')" title="คลิกเพื่อดูใบสั่งอาหาร/สกรีนช็อต">
@@ -1257,24 +1331,52 @@
                                 </div>
                                 <span class="text-xs text-gray-400">${timeStr}</span>
                             </div>
+                            ${cancelBtnHTML}
                         </div>
                     </div>
                 `;
             });
         };
 
-        // --- SHOP LOGIC ---
-        window.toggleMenuModal = (show) => {
+        // --- SHOP MENU LOGIC (Add/Edit/Delete) ---
+        let editingMenuId = null;
+
+        window.toggleMenuModal = (show, menuId = null) => {
             const modal = document.getElementById('menuModal');
-            show ? modal.classList.remove('hidden') : modal.classList.add('hidden');
-            if (show) document.getElementById('menuForm').reset();
+            const title = document.getElementById('menuModalTitle');
+            if (show) {
+                modal.classList.remove('hidden');
+                if (menuId) {
+                    // โหมดแก้ไข
+                    editingMenuId = menuId;
+                    title.textContent = 'แก้ไขเมนู';
+                    const menu = menus.find(m => m.id === menuId);
+                    if (menu) {
+                        document.getElementById('menuName').value = menu.name || '';
+                        document.getElementById('menuPrice').value = menu.price || '';
+                        document.getElementById('menuStartTime').value = menu.startTime || '06:00';
+                        document.getElementById('menuEndTime').value = menu.endTime || '16:00';
+                        document.getElementById('menuImage').value = menu.imageUrl || '';
+                        document.getElementById('menuHasDelivery').checked = menu.hasDelivery !== false;
+                        document.getElementById('menuHasPickup').checked = menu.hasPickup !== false;
+                        document.getElementById('menuAvailable').checked = menu.isAvailable !== false;
+                    }
+                } else {
+                    // โหมดเพิ่มใหม่
+                    editingMenuId = null;
+                    title.textContent = 'เพิ่มเมนูใหม่';
+                    document.getElementById('menuForm').reset();
+                }
+            } else {
+                modal.classList.add('hidden');
+            }
         };
 
         document.getElementById('menuForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             toggleLoading(true);
             const menuData = {
-                shopName: currentUserShopName, // เปลี่ยนมาใช้ชื่อร้านที่ล็อคอินอยู่
+                shopName: currentUserShopName,
                 name: document.getElementById('menuName').value,
                 price: parseFloat(document.getElementById('menuPrice').value),
                 startTime: document.getElementById('menuStartTime').value,
@@ -1282,25 +1384,57 @@
                 imageUrl: document.getElementById('menuImage').value || '',
                 hasDelivery: document.getElementById('menuHasDelivery').checked,
                 hasPickup: document.getElementById('menuHasPickup').checked,
-                isAvailable: document.getElementById('menuAvailable').checked,
-                createdAt: serverTimestamp()
+                isAvailable: document.getElementById('menuAvailable').checked
             };
 
             try {
-                await addDoc(collection(db, getCollectionPath('menus')), menuData);
+                if (editingMenuId) {
+                    await updateDoc(doc(db, getCollectionPath('menus'), editingMenuId), menuData);
+                    showToast("แก้ไขเมนูสำเร็จ");
+                } else {
+                    menuData.createdAt = serverTimestamp();
+                    await addDoc(collection(db, getCollectionPath('menus')), menuData);
+                    showToast("เพิ่มเมนูสำเร็จ");
+                }
                 toggleMenuModal(false);
-                showToast("เพิ่มเมนูสำเร็จ");
             } catch (error) {
-                console.error("Error adding menu:", error);
+                console.error("Error saving menu:", error);
+                showToast("เกิดข้อผิดพลาดในการบันทึก");
             }
             toggleLoading(false);
         });
+
+        let menuToDelete = null;
+        window.confirmDeleteMenu = (menuId) => {
+            menuToDelete = menuId;
+            document.getElementById('deleteMenuConfirmModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('deleteMenuConfirmPanel').classList.remove('scale-95'), 10);
+        };
+
+        window.closeDeleteMenuModal = () => {
+            document.getElementById('deleteMenuConfirmPanel').classList.add('scale-95');
+            setTimeout(() => document.getElementById('deleteMenuConfirmModal').classList.add('hidden'), 150);
+            menuToDelete = null;
+        };
+
+        window.executeDeleteMenu = async () => {
+            if (!menuToDelete) return;
+            toggleLoading(true);
+            try {
+                await deleteDoc(doc(db, getCollectionPath('menus'), menuToDelete));
+                showToast("ลบเมนูสำเร็จ");
+                closeDeleteMenuModal();
+            } catch (error) {
+                console.error("Error deleting menu:", error);
+                showToast("เกิดข้อผิดพลาดในการลบเมนู");
+            }
+            toggleLoading(false);
+        };
 
         const renderShopMenu = () => {
             const list = document.getElementById('shopMenuList');
             list.innerHTML = '';
             
-            // กรองให้เห็นเฉพาะเมนูของร้านตัวเอง
             const myMenus = menus.filter(m => m.shopName === currentUserShopName);
 
             if(myMenus.length === 0) {
@@ -1327,13 +1461,16 @@
                                 <div class="text-xs">${serviceInfo}</div>
                             </div>
                         </div>
+                        <!-- เปลี่ยนเป็นปุ่มจัดการเมนู -->
                         <div class="flex flex-col items-end gap-2">
-                            <span class="text-xs px-2 py-0.5 rounded border ${availClass}">
+                            <span class="text-[10px] px-2 py-0.5 rounded border ${availClass}">
                                 ${menu.isAvailable ? 'พร้อมขาย' : 'ระงับ/หมด'}
                             </span>
-                            <button onclick="toggleMenuStatus('${menu.id}', ${!menu.isAvailable})" class="text-xs text-blue-500 underline">
-                                เปลี่ยนสถานะ
-                            </button>
+                            <div class="flex items-center gap-1 mt-1">
+                                <button onclick="toggleMenuStatus('${menu.id}', ${!menu.isAvailable})" class="text-xs text-blue-500 hover:bg-blue-50 w-7 h-7 flex items-center justify-center rounded-lg transition border border-transparent hover:border-blue-100" title="เปิด/ปิด การขาย"><i class="fa-solid fa-power-off"></i></button>
+                                <button onclick="toggleMenuModal(true, '${menu.id}')" class="text-xs text-yellow-500 hover:bg-yellow-50 w-7 h-7 flex items-center justify-center rounded-lg transition border border-transparent hover:border-yellow-100" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="confirmDeleteMenu('${menu.id}')" class="text-xs text-red-500 hover:bg-red-50 w-7 h-7 flex items-center justify-center rounded-lg transition border border-transparent hover:border-red-100" title="ลบ"><i class="fa-solid fa-trash"></i></button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1362,14 +1499,12 @@
 
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    // กรองให้ร้านค้าเห็นเฉพาะออเดอร์ของร้านตัวเอง
                     if (data.shopName === currentUserShopName) {
                         shopOrders.push({ id: doc.id, ...data });
-                        if (data.status !== 'completed') activeCount++;
+                        if (data.status !== 'completed' && data.status !== 'cancelled') activeCount++;
                     }
                 });
 
-                // ตรวจสอบออเดอร์ใหม่เพื่อเล่นเสียง
                 if (!isInitialShopOrderLoad) {
                     snapshot.docChanges().forEach((change) => {
                         if (change.type === "added" && change.doc.data().status === 'pending' && change.doc.data().shopName === currentUserShopName) {
@@ -1480,6 +1615,7 @@
                 case 'ready': return { text: 'รอส่ง/รอรับ', icon: '<i class="fa-solid fa-box"></i>', badge: 'bg-yellow-100 text-yellow-600 border-yellow-200 border', border: 'bg-yellow-500', btnText: 'ดำเนินการส่ง/ส่งมอบ', btnClass: 'bg-yellow-500 hover:bg-yellow-600 text-white' };
                 case 'delivering': return { text: 'กำลังไปส่ง/รอลูกค้ามารับ', icon: '<i class="fa-solid fa-person-walking"></i>', badge: 'bg-blue-100 text-blue-600 border-blue-200 border', border: 'bg-blue-500', btnText: 'เสร็จสิ้น (เก็บเงิน)', btnClass: 'bg-blue-500 hover:bg-blue-600 text-white' };
                 case 'completed': return { text: 'สำเร็จแล้ว', icon: '<i class="fa-solid fa-check-circle"></i>', badge: 'bg-green-100 text-green-600 border-green-200 border', border: 'bg-green-500', btnText: 'เรียบร้อย', btnClass: 'bg-gray-300 text-gray-500 cursor-not-allowed', disabled: true };
+                case 'cancelled': return { text: 'ยกเลิกแล้ว', icon: '<i class="fa-solid fa-ban"></i>', badge: 'bg-gray-100 text-gray-500 border-gray-200 border', border: 'bg-gray-400', btnText: 'ยกเลิกแล้ว', btnClass: 'bg-gray-200 text-gray-400 cursor-not-allowed', disabled: true };
                 default: return { text: 'ไม่ทราบ', icon: '', badge: 'bg-gray-100 border-gray-200 border', border: 'bg-gray-500', btnText: 'อัปเดต', btnClass: 'bg-gray-500 text-white' };
             }
         };
@@ -1493,7 +1629,7 @@
         let currentCompletingOrderId = null;
 
         window.advanceOrderStatus = async (orderId, currentStatus) => {
-            if (currentStatus === 'completed') return;
+            if (currentStatus === 'completed' || currentStatus === 'cancelled') return;
             const nextStatus = getNextStatus(currentStatus);
             
             if (nextStatus === 'completed') {
@@ -1530,8 +1666,8 @@
             list.innerHTML = '';
 
             const filteredOrders = shopOrders.filter(order => {
-                if (currentShopOrderTab === 'active') return order.status !== 'completed';
-                if (currentShopOrderTab === 'completed') return order.status === 'completed';
+                if (currentShopOrderTab === 'active') return order.status !== 'completed' && order.status !== 'cancelled';
+                if (currentShopOrderTab === 'completed') return order.status === 'completed' || order.status === 'cancelled';
                 return true;
             });
 
@@ -1539,7 +1675,7 @@
                 list.innerHTML = `
                 <div class="text-center py-10 flex flex-col items-center opacity-50 bg-white rounded-xl border border-dashed border-gray-300">
                     <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3"><i class="fa-solid fa-box-open text-2xl text-gray-400"></i></div>
-                    <p class="font-medium text-gray-500">ไม่มีออเดอร์${currentShopOrderTab === 'active' ? 'ที่กำลังดำเนินการ' : 'ที่สำเร็จแล้ว'}</p>
+                    <p class="font-medium text-gray-500">ไม่มีออเดอร์${currentShopOrderTab === 'active' ? 'ที่กำลังดำเนินการ' : 'ที่สำเร็จ/ยกเลิกแล้ว'}</p>
                 </div>`;
                 return;
             }
@@ -1554,9 +1690,12 @@
                     : '<span class="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded border border-blue-200"><i class="fa-solid fa-motorcycle"></i> จัดส่ง</span>';
 
                 const noteBadge = order.note ? `<div class="mt-2 text-xs text-primary bg-pink-50 p-2 rounded-lg border border-pink-100"><i class="fa-regular fa-comment-dots"></i> <b>หมายเหตุ:</b> ${order.note}</div>` : '';
+                
+                // ปุ่มปฏิเสธ (ยกเลิก) โชว์เฉพาะตอน pending
+                const rejectBtnHTML = order.status === 'pending' ? `<button onclick="cancelOrder('${order.id}')" class="px-3 py-2 rounded-xl text-sm font-bold shadow-sm transition bg-white border border-red-500 text-red-500 hover:bg-red-50">ปฏิเสธ</button>` : '';
 
                 list.innerHTML += `
-                    <div class="bg-white rounded-xl shadow-sm border ${order.status === 'completed' ? 'opacity-70 border-gray-200' : 'border-l-4 border-l-primary hover:border-l-pink-600'} overflow-hidden transition">
+                    <div class="bg-white rounded-xl shadow-sm border ${order.status === 'completed' || order.status === 'cancelled' ? 'opacity-70 border-gray-200' : 'border-l-4 border-l-primary hover:border-l-pink-600'} overflow-hidden transition">
                         <!-- Clickable Header area to open receipt -->
                         <div class="p-3 border-b bg-gray-50 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition" onclick="openReceipt('${order.id}')" title="คลิกเพื่อดูใบสั่งอาหาร/สกรีนช็อต">
                             <div>
@@ -1575,12 +1714,15 @@
                             ${noteBadge}
                             <div class="flex justify-between items-center mt-2 pt-2 border-t">
                                 <span class="font-bold text-primary text-lg">฿${order.total}</span>
-                                <button 
-                                    onclick="advanceOrderStatus('${order.id}', '${order.status}')"
-                                    ${info.disabled ? 'disabled' : ''}
-                                    class="px-4 py-2 rounded-xl text-sm font-bold shadow-md transition ${info.btnClass}">
-                                    ${info.btnText}
-                                </button>
+                                <div class="flex gap-2">
+                                    ${rejectBtnHTML}
+                                    <button 
+                                        onclick="advanceOrderStatus('${order.id}', '${order.status}')"
+                                        ${info.disabled ? 'disabled' : ''}
+                                        class="px-4 py-2 rounded-xl text-sm font-bold shadow-md transition ${info.btnClass}">
+                                        ${info.btnText}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1608,7 +1750,7 @@
             let filteredStatsOrders = [];
 
             shopOrders.forEach(order => {
-                if (order.status !== 'completed') return; 
+                if (order.status !== 'completed') return; // ไม่นับออเดอร์ที่ cancelled
                 
                 const orderTime = order.timestamp ? new Date(order.timestamp.toMillis()) : new Date();
                 
