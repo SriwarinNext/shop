@@ -501,14 +501,16 @@
         // ==========================================
         
         const isCanvasEnv = typeof __firebase_config !== 'undefined';
-        const firebaseConfig = isCanvasEnv ? JSON.parse(__firebase_config) : {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+        const firebaseConfig = {
+          apiKey: "AIzaSyDv7hE5ZDilsL1b3S2gpDIqqMlRdU5ff0g",
+          authDomain: "sriwarin-shoping.firebaseapp.com",
+          projectId: "sriwarin-shoping",
+          storageBucket: "sriwarin-shoping.firebasestorage.app",
+          messagingSenderId: "233133001906",
+          appId: "1:233133001906:web:9492e390532d29bc008dab",
+          measurementId: "G-KRZDYVV65K"
         };
+
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -516,9 +518,9 @@
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'school-delivery-app';
         const getCollectionPath = (collectionName) => {
-            if (isCanvasEnv) return `artifacts/${appId}/public/data/${collectionName}`;
-            return collectionName;
-        };
+                if (isCanvasEnv) return `artifacts/${appId}/public/data/${collectionName}`;
+                return collectionName; // ใช้บรรทัดนี้เมื่อนำเว็บไปรันจริงบน GitHub
+                };
 
         // Application State
         let currentUser = null;
