@@ -80,7 +80,7 @@
         <!-- Loading Screen -->
         <div id="loadingScreen" class="absolute inset-0 bg-white/80 z-50 flex flex-col justify-center items-center">
             <div class="loader mb-4"></div>
-            <p class="text-gray-500">กำลังโหลดข้อมูล...</p>
+            <p class="text-gray-500">กำลังตรวจสอบสิทธิ์...</p>
         </div>
 
         <!-- 1. Login View -->
@@ -100,7 +100,7 @@
 
                 <div class="relative flex items-center justify-center mb-4 mt-2">
                     <div class="border-t border-gray-200 w-full"></div>
-                    <span class="bg-white px-3 text-gray-400 text-xs absolute">หรือ</span>
+                    <span class="bg-white px-3 text-gray-400 text-xs absolute">หรือสำหรับเจ้าหน้าที่</span>
                 </div>
 
                 <!-- Shop/Admin Button (Google Login) -->
@@ -108,15 +108,6 @@
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
                     เข้าสู่ระบบ (ร้านค้า/แอดมิน)
                 </button>
-                
-                <!-- Role Selector (For testing specific Google role flows) -->
-                <div class="mt-6 text-left border-t pt-4">
-                    <p class="text-xs text-gray-400 mb-2">* เลือกระดับสิทธิ์ก่อนเข้าสู่ระบบด้วย Google</p>
-                    <select id="authRoleSelect" class="w-full border rounded p-2 text-sm focus:ring-primary outline-none text-gray-600">
-                        <option value="shop">ร้านค้า (Shop)</option>
-                        <option value="admin">ผู้ดูแลระบบ (Admin)</option>
-                    </select>
-                </div>
             </div>
         </section>
 
@@ -152,11 +143,8 @@
         <!-- 4. Shop View: Manage Menu -->
         <section id="shopMenuView" class="hidden p-4 pb-10">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="font-bold text-lg text-gray-700">จัดการเมนูอาหาร</h2>
+                <h2 class="font-bold text-lg text-gray-700" id="shopMenuHeaderTitle">จัดการเมนูอาหาร</h2>
                 <div class="flex gap-2">
-                    <button onclick="seedMockData()" class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm border hover:bg-gray-200 transition" title="เพิ่มข้อมูลจำลอง">
-                        <i class="fa-solid fa-magic"></i> ข้อมูลจำลอง
-                    </button>
                     <button onclick="toggleMenuModal(true)" class="bg-gradient-to-r from-primary to-secondary text-white px-3 py-1.5 rounded-lg text-sm shadow-sm hover:opacity-90 transition">
                         <i class="fa-solid fa-plus mr-1"></i> เพิ่มเมนู
                     </button>
@@ -169,7 +157,7 @@
 
         <!-- 5. Shop View: Incoming Orders -->
         <section id="shopOrdersView" class="hidden p-4 pb-10">
-            <h2 class="font-bold text-lg text-gray-700 mb-3">รายการออเดอร์</h2>
+            <h2 class="font-bold text-lg text-gray-700 mb-3" id="shopOrdersHeaderTitle">รายการออเดอร์</h2>
             
             <!-- Shop Orders Sub-Tabs -->
             <div class="flex gap-2 mb-4 border-b">
@@ -243,20 +231,34 @@
         <section id="adminView" class="hidden p-4 pb-10">
             <div class="bg-gradient-to-r from-primary to-secondary rounded-xl p-6 text-white shadow-md mb-6">
                 <h2 class="font-bold text-xl mb-1"><i class="fa-solid fa-shield-halved mr-2"></i> แผงควบคุมผู้ดูแลระบบ</h2>
-                <p class="text-sm opacity-90">ยินดีต้อนรับเข้าสู่ระบบจัดการสำหรับโรงเรียนศรีวารินทร์</p>
+                <p class="text-sm opacity-90">ระบบจัดการสิทธิ์และเพิ่มร้านค้า</p>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center gap-2">
-                    <div class="w-12 h-12 bg-pink-100 text-primary rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-users"></i></div>
-                    <span class="font-medium text-sm text-gray-700">จัดการผู้ใช้</span>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center gap-2">
-                    <div class="w-12 h-12 bg-blue-100 text-secondary rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-store"></i></div>
-                    <span class="font-medium text-sm text-gray-700">จัดการร้านค้า</span>
+            
+            <!-- Form: เพิ่มสิทธิ์ร้านค้าใหม่ -->
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 mb-6">
+                <h3 class="font-bold text-gray-800 mb-3 text-sm"><i class="fa-solid fa-store text-primary mr-1"></i> เพิ่มบัญชีร้านค้าใหม่</h3>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">ชื่อร้านค้า (จะแสดงให้ลูกค้าเห็น)</label>
+                        <input type="text" id="newShopName" placeholder="เช่น ร้านน้ำปั่นชื่นใจ" class="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-primary">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">อีเมลผู้ใช้งาน (Gmail ของร้านค้า)</label>
+                        <input type="email" id="newShopEmail" placeholder="example@gmail.com" class="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-primary">
+                    </div>
+                    <button onclick="registerNewShop()" class="w-full bg-blue-500 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-blue-600 transition shadow-sm mt-2">
+                        เพิ่มสิทธิ์ร้านค้า
+                    </button>
                 </div>
             </div>
-            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-6 text-sm text-yellow-700 rounded-r-lg">
-                <i class="fa-solid fa-circle-info mr-1"></i> นี่คือหน้าการแสดงผลสำหรับ <b>บทบาท Admin</b> ใน V.2 ควรมีการจัดการสิทธิ์ผู้ใช้จากฐานข้อมูลจริง
+
+            <!-- List: รายชื่อร้านค้าในระบบ -->
+            <div>
+                <h3 class="font-bold text-gray-800 mb-3 text-sm">รายชื่อร้านค้าในระบบ</h3>
+                <div id="adminShopList" class="space-y-2">
+                    <!-- รายชื่อร้านค้าถูกฉีดที่นี่ -->
+                    <div class="text-center text-sm text-gray-400 py-4">กำลังโหลด...</div>
+                </div>
             </div>
         </section>
 
@@ -494,10 +496,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, getDocs, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
-        // 1. PRODUCTION CONFIGURATION (User provided)
+        // 1. PRODUCTION CONFIGURATION
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyDv7hE5ZDilsL1b3S2gpDIqqMlRdU5ff0g",
@@ -516,13 +518,18 @@
         // Production Collection Paths
         const getCollectionPath = (collectionName) => collectionName;
 
+        // **ตั้งค่าอีเมลแอดมินสูงสุด (Master Admin) ที่นี่**
+        const MASTER_ADMIN_EMAIL = "abdulhakim.a@sriwarinschool.ac.th";
+
         // Application State
         let currentUser = null;
         let currentRole = 'customer'; 
+        let currentUserShopName = 'โรงอาหารกลาง'; // สำคัญสำหรับร้านค้า เพื่อแยกข้อมูล
         let menus = [];
         let cart = [];
         let myOrders = [];
         let shopOrders = [];
+        let allShops = []; // สำหรับแอดมินดูรายชื่อร้าน
         
         let isInitialShopOrderLoad = true; 
         let isInitialCustomerOrderLoad = true;
@@ -608,11 +615,14 @@
 
         const setupRoleUI = () => {
             document.getElementById('userInfoHeader').classList.remove('hidden');
-            const displayName = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : '');
-            document.getElementById('userNameDisplay').textContent = displayName || (currentRole === 'customer' ? 'ลูกค้า (ผู้เยี่ยมชม)' : 'ผู้ใช้งาน');
+            let displayName = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : '');
             
-            // Pre-fill Name in Cart if available
-            if(displayName) document.getElementById('orderContactName').value = displayName;
+            // แสดงชื่อร้านแทนชื่อ Google หากล็อกอินในฐานะร้านค้า
+            if (currentRole === 'shop') displayName = currentUserShopName;
+            
+            document.getElementById('userNameDisplay').textContent = displayName || (currentRole === 'customer' ? 'ลูกค้า (ผู้เยี่ยมชม)' : 'แอดมิน');
+            
+            if(currentUser.displayName && currentRole === 'customer') document.getElementById('orderContactName').value = currentUser.displayName;
 
             const bottomNav = document.getElementById('bottomNav');
             const floatingCartBtn = document.getElementById('floatingCartBtn');
@@ -634,6 +644,8 @@
                 listenToMyOrders();
             } else if (currentRole === 'shop') {
                 isInitialShopOrderLoad = true;
+                document.getElementById('shopMenuHeaderTitle').textContent = `จัดการเมนู: ${currentUserShopName}`;
+                document.getElementById('shopOrdersHeaderTitle').textContent = `ออเดอร์: ${currentUserShopName}`;
                 roleTabs.classList.remove('hidden');
                 roleTabs.innerHTML = `
                     <button onclick="switchShopTab('orders')" class="shop-tab flex-1 py-3 border-b-2 text-primary border-primary transition">ออเดอร์</button>
@@ -645,41 +657,39 @@
                 listenToShopOrders();
             } else if (currentRole === 'admin') {
                 showView('adminView');
+                fetchAdminShopList(); // โหลดรายชื่อร้านให้แอดมินดู
             }
         };
 
         // ==========================================
-        // 3. AUTHENTICATION (PRODUCTION)
+        // 3. AUTHENTICATION & ROLE MANAGEMENT (REAL-WORLD)
         // ==========================================
         
-        // Guest Order Button (Customer - No Google Login required)
+        // 1. สั่งอาหารทันที (Customer - Anonymous)
         document.getElementById('guestOrderBtn').addEventListener('click', async () => {
             toggleLoading(true);
             try {
-                sessionStorage.setItem('appRole', 'customer');
-                // ใช้ Anonymous Login เพื่อให้มี UID สำหรับบันทึกออเดอร์
-                if (!auth.currentUser) {
+                if (!auth.currentUser || !auth.currentUser.isAnonymous) {
                     await signInAnonymously(auth);
                 } else {
-                    // ถ้าเคยล็อคอินอยู่แล้ว ให้ setup UI เลย
                     currentRole = 'customer';
                     setupRoleUI();
                     toggleLoading(false);
                 }
             } catch (error) {
                 console.error("Guest login failed", error);
-                alert("กรุณาเปิดใช้งาน Anonymous Provider ใน Firebase Console: " + error.message);
+                alert("เกิดข้อผิดพลาด กรุณาตรวจสอบว่าเปิดระบบ Anonymous Login ใน Firebase แล้ว: " + error.message);
                 toggleLoading(false);
             }
         });
 
-        // Google Login Button (Shop/Admin)
+        // 2. เจ้าหน้าที่ (Shop/Admin - Google)
         document.getElementById('googleLoginBtn').addEventListener('click', async () => {
             toggleLoading(true);
             try {
-                sessionStorage.setItem('appRole', document.getElementById('authRoleSelect').value);
                 const provider = new GoogleAuthProvider();
                 await signInWithPopup(auth, provider);
+                // การตรวจสอบสิทธิ์จะเกิดขึ้นใน onAuthStateChanged
             } catch (error) {
                 console.error("Google Login failed", error);
                 alert("เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google: " + error.message);
@@ -691,26 +701,54 @@
             toggleLoading(true);
             try {
                 await signOut(auth);
-                sessionStorage.removeItem('appRole');
             } catch (error) {
                 console.error("Logout error", error);
             }
             toggleLoading(false);
         });
 
-        onAuthStateChanged(auth, (user) => {
+        // ตรวจสอบสิทธิ์ (RBAC) ทุกครั้งที่มีการล็อกอิน
+        onAuthStateChanged(auth, async (user) => {
             toggleLoading(true);
             if (user) {
                 currentUser = user;
-                const savedRole = sessionStorage.getItem('appRole');
-                if (savedRole) {
-                    currentRole = savedRole; 
-                    setupRoleUI();
-                } else {
-                    // ถ้าไม่มี Role ถูกตั้งไว้ (กรณี refresh หน้าแล้ว state หาย)
-                    // อนุมานว่าเป็น customer ไว้ก่อนเพื่อความปลอดภัย
+                
+                // หากเป็นบัญชีชั่วคราว (กดสั่งอาหาร) ให้เป็นลูกค้าเลย
+                if (user.isAnonymous) {
                     currentRole = 'customer';
                     setupRoleUI();
+                    toggleLoading(false);
+                    return;
+                }
+
+                // หากล็อกอินด้วย Google ให้เช็คว่าเป็น Admin สูงสุดหรือไม่
+                if (user.email && user.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase()) {
+                    currentRole = 'admin';
+                    setupRoleUI();
+                    toggleLoading(false);
+                    return;
+                }
+
+                // หากไม่ใช่ Admin สูงสุด ให้ไปเช็คใน Database ว่าแอดมินเคยเพิ่มอีเมลร้านค้านี้ไว้ไหม
+                try {
+                    const q = query(collection(db, getCollectionPath('users')), where("email", "==", user.email.toLowerCase()));
+                    const snapshot = await getDocs(q);
+                    
+                    if (!snapshot.empty) {
+                        // เจออีเมลในระบบ แปลว่าแอดมินเพิ่มให้แล้ว
+                        const userData = snapshot.docs[0].data();
+                        currentRole = userData.role; // 'shop'
+                        currentUserShopName = userData.shopName; // ชื่อร้านที่แอดมินตั้งให้
+                        setupRoleUI();
+                    } else {
+                        // ไม่พบอีเมลในระบบ (แอดมินยังไม่ได้อนุมัติ/เพิ่มให้)
+                        alert(`อีเมล (${user.email}) ยังไม่ได้รับสิทธิ์ให้เข้าสู่ระบบร้านค้า กรุณาติดต่อแอดมินเพื่อเพิ่มสิทธิ์ให้ร้านของคุณครับ`);
+                        await signOut(auth); // เตะออก
+                    }
+                } catch (error) {
+                    console.error("Error checking role:", error);
+                    alert("เกิดข้อผิดพลาดในการตรวจสอบสิทธิ์");
+                    await signOut(auth);
                 }
             } else {
                 currentUser = null;
@@ -728,16 +766,86 @@
         });
 
         // ==========================================
+        // 3.5 ADMIN FUNCTIONS (Add Shops)
+        // ==========================================
+        window.registerNewShop = async () => {
+            const nameInput = document.getElementById('newShopName').value.trim();
+            const emailInput = document.getElementById('newShopEmail').value.trim().toLowerCase();
+
+            if (!nameInput || !emailInput) {
+                showToast("กรุณากรอกชื่อร้านและอีเมลให้ครบถ้วน");
+                return;
+            }
+
+            toggleLoading(true);
+            try {
+                // เช็คก่อนว่ามีอีเมลนี้ในระบบแล้วหรือยัง
+                const q = query(collection(db, getCollectionPath('users')), where("email", "==", emailInput));
+                const snapshot = await getDocs(q);
+                
+                if (!snapshot.empty) {
+                    showToast("อีเมลนี้มีอยู่ในระบบแล้ว!");
+                } else {
+                    // สร้างบัญชีร้านค้าใหม่ใน Database
+                    await addDoc(collection(db, getCollectionPath('users')), {
+                        email: emailInput,
+                        shopName: nameInput,
+                        role: 'shop',
+                        createdAt: serverTimestamp()
+                    });
+                    showToast("✅ เพิ่มสิทธิ์ร้านค้าสำเร็จแล้ว!");
+                    document.getElementById('newShopName').value = '';
+                    document.getElementById('newShopEmail').value = '';
+                    fetchAdminShopList(); // โหลดข้อมูลใหม่
+                }
+            } catch (error) {
+                console.error("Error adding shop:", error);
+                alert("เกิดข้อผิดพลาด: " + error.message);
+            }
+            toggleLoading(false);
+        };
+
+        const fetchAdminShopList = async () => {
+            const listEl = document.getElementById('adminShopList');
+            try {
+                const q = query(collection(db, getCollectionPath('users')), where("role", "==", "shop"));
+                const snapshot = await getDocs(q);
+                
+                listEl.innerHTML = '';
+                if (snapshot.empty) {
+                    listEl.innerHTML = '<div class="text-center text-sm text-gray-400 py-4 border rounded-xl border-dashed">ยังไม่มีร้านค้าในระบบ</div>';
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    listEl.innerHTML += `
+                        <div class="bg-white p-3 rounded-lg border flex justify-between items-center shadow-sm">
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-sm">${data.shopName}</h4>
+                                <p class="text-xs text-gray-500"><i class="fa-regular fa-envelope"></i> ${data.email}</p>
+                            </div>
+                            <span class="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">อนุมัติแล้ว</span>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                listEl.innerHTML = '<div class="text-center text-sm text-red-400 py-4">ดึงข้อมูลล้มเหลว</div>';
+            }
+        };
+
+        // ==========================================
         // 4. DATA LOGIC (FIREBASE FIRESTORE)
         // ==========================================
 
         window.seedMockData = async () => {
             toggleLoading(true);
+            // ให้เพิ่มข้อมูลโดยใช้ชื่อร้านที่ล็อคอินอยู่ (currentUserShopName)
+            const shopName = currentRole === 'shop' ? currentUserShopName : "ร้านทดสอบ (แอดมินเพิ่ม)";
+            
             const mockMenus = [
-                { shopName: "ร้านป้าแจ่ม", name: "ข้าวมันไก่ต้ม", price: 40, isAvailable: true, startTime: "06:00", endTime: "14:00", imageUrl: "https://images.unsplash.com/photo-1626804475297-41609ea004eb?w=500&q=80", hasDelivery: true, hasPickup: true },
-                { shopName: "ร้านป้าแจ่ม", name: "ข้าวกะเพราหมูสับ", price: 45, isAvailable: true, startTime: "08:00", endTime: "18:00", imageUrl: "https://images.unsplash.com/photo-1628294895950-9805252327bc?w=500&q=80", hasDelivery: true, hasPickup: true },
-                { shopName: "ร้านน้ำปั่นชื่นใจ", name: "ชานมไข่มุก (เย็น)", price: 30, isAvailable: true, startTime: "10:00", endTime: "16:00", imageUrl: "https://images.unsplash.com/photo-1558857563-b37102e987c8?w=500&q=80", hasDelivery: true, hasPickup: true },
-                { shopName: "ร้านรักสุขภาพ", name: "สลัดโรล", price: 35, isAvailable: true, startTime: "08:00", endTime: "16:00", imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&q=80", hasDelivery: false, hasPickup: true }
+                { shopName: shopName, name: "เมนูทดสอบ 1", price: 40, isAvailable: true, startTime: "06:00", endTime: "18:00", imageUrl: "https://images.unsplash.com/photo-1626804475297-41609ea004eb?w=500&q=80", hasDelivery: true, hasPickup: true },
+                { shopName: shopName, name: "เมนูทดสอบ 2", price: 30, isAvailable: true, startTime: "06:00", endTime: "18:00", imageUrl: "https://images.unsplash.com/photo-1558857563-b37102e987c8?w=500&q=80", hasDelivery: true, hasPickup: true },
             ];
 
             try {
@@ -770,7 +878,7 @@
             const container = document.getElementById('shopGrid');
             container.innerHTML = '';
 
-            const uniqueShops = [...new Set(menus.map(m => m.shopName || "โรงอาหารกลาง"))];
+            const uniqueShops = [...new Set(menus.map(m => m.shopName || "ร้านทั่วไป"))];
 
             if (uniqueShops.length === 0) {
                 container.innerHTML = '<p class="text-center text-gray-500 py-10 col-span-2">ยังไม่มีร้านค้าเปิดให้บริการ</p>';
@@ -778,7 +886,7 @@
             }
 
             uniqueShops.forEach((shopName, index) => {
-                const shopMenus = menus.filter(m => (m.shopName || "โรงอาหารกลาง") === shopName);
+                const shopMenus = menus.filter(m => (m.shopName || "ร้านทั่วไป") === shopName);
                 const colors = ['bg-pink-50 border-pink-200', 'bg-blue-50 border-blue-200', 'bg-yellow-50 border-yellow-200', 'bg-green-50 border-green-200'];
                 const cardColor = colors[index % colors.length];
 
@@ -806,7 +914,7 @@
             const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
 
             const availableMenus = menus.filter(m => {
-                const sName = m.shopName || "โรงอาหารกลาง";
+                const sName = m.shopName || "ร้านทั่วไป";
                 if (sName !== targetShopName) return false;
                 if (!m.isAvailable) return false;
                 if (!m.startTime || !m.endTime) return true; 
@@ -855,7 +963,7 @@
             const menu = menus.find(m => m.id === menuId);
             if (!menu) return;
 
-            if (cart.length > 0 && cart[0].shopName !== (menu.shopName || "โรงอาหารกลาง")) {
+            if (cart.length > 0 && cart[0].shopName !== (menu.shopName || "ร้านทั่วไป")) {
                 showToast(`กรุณาสั่งอาหารจากร้านเดียวกัน (ตะกร้ามีอาหารของร้าน ${cart[0].shopName})`);
                 return;
             }
@@ -869,7 +977,7 @@
                     name: menu.name, 
                     price: menu.price, 
                     qty: 1, 
-                    shopName: menu.shopName || "โรงอาหารกลาง",
+                    shopName: menu.shopName || "ร้านทั่วไป",
                     hasDelivery: menu.hasDelivery,
                     hasPickup: menu.hasPickup
                 });
@@ -1166,7 +1274,7 @@
             e.preventDefault();
             toggleLoading(true);
             const menuData = {
-                shopName: "โรงอาหารกลาง", 
+                shopName: currentUserShopName, // เปลี่ยนมาใช้ชื่อร้านที่ล็อคอินอยู่
                 name: document.getElementById('menuName').value,
                 price: parseFloat(document.getElementById('menuPrice').value),
                 startTime: document.getElementById('menuStartTime').value,
@@ -1192,7 +1300,15 @@
             const list = document.getElementById('shopMenuList');
             list.innerHTML = '';
             
-            menus.forEach(menu => {
+            // กรองให้เห็นเฉพาะเมนูของร้านตัวเอง
+            const myMenus = menus.filter(m => m.shopName === currentUserShopName);
+
+            if(myMenus.length === 0) {
+                list.innerHTML = '<div class="text-center py-10 text-gray-500 text-sm">ยังไม่มีเมนูในร้านของคุณ</div>';
+                return;
+            }
+
+            myMenus.forEach(menu => {
                 const availClass = menu.isAvailable ? 'text-green-500 bg-green-50 border-green-200' : 'text-gray-500 bg-gray-50 border-gray-200';
                 const timeStr = (menu.startTime && menu.endTime) ? `${menu.startTime}-${menu.endTime} น.` : '';
                 
@@ -1240,22 +1356,32 @@
             const ordersRef = collection(db, getCollectionPath('orders'));
             ordersUnsubscribe = onSnapshot(ordersRef, (snapshot) => {
                 
+                shopOrders = [];
+                let activeCount = 0;
+                let newOrderAdded = false;
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // กรองให้ร้านค้าเห็นเฉพาะออเดอร์ของร้านตัวเอง
+                    if (data.shopName === currentUserShopName) {
+                        shopOrders.push({ id: doc.id, ...data });
+                        if (data.status !== 'completed') activeCount++;
+                    }
+                });
+
+                // ตรวจสอบออเดอร์ใหม่เพื่อเล่นเสียง
                 if (!isInitialShopOrderLoad) {
                     snapshot.docChanges().forEach((change) => {
-                        if (change.type === "added" && change.doc.data().status === 'pending') {
-                            playAlertSound();
-                            showToast("🔔 มีออเดอร์ใหม่เข้ามา!");
+                        if (change.type === "added" && change.doc.data().status === 'pending' && change.doc.data().shopName === currentUserShopName) {
+                            newOrderAdded = true;
                         }
                     });
                 }
-                
-                shopOrders = [];
-                let activeCount = 0;
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    shopOrders.push({ id: doc.id, ...data });
-                    if (data.status !== 'completed') activeCount++;
-                });
+
+                if (newOrderAdded) {
+                    playAlertSound();
+                    showToast("🔔 มีออเดอร์ใหม่เข้ามา!");
+                }
                 
                 const badge = document.getElementById('orderBadge');
                 if (activeCount > 0) {
