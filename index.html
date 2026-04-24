@@ -145,9 +145,6 @@
             <div class="flex justify-between items-center mb-4">
                 <h2 class="font-bold text-lg text-gray-700" id="shopMenuHeaderTitle">จัดการเมนูอาหาร</h2>
                 <div class="flex gap-2">
-                    <button onclick="seedMockData()" class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm border hover:bg-gray-200 transition" title="เพิ่มข้อมูลจำลอง">
-                        <i class="fa-solid fa-magic"></i> ข้อมูลจำลอง
-                    </button>
                     <button onclick="toggleMenuModal(true)" class="bg-gradient-to-r from-primary to-secondary text-white px-3 py-1.5 rounded-lg text-sm shadow-sm hover:opacity-90 transition">
                         <i class="fa-solid fa-plus mr-1"></i> เพิ่มเมนู
                     </button>
@@ -882,26 +879,6 @@
         // ==========================================
         // 4. DATA LOGIC (FIREBASE FIRESTORE)
         // ==========================================
-
-        window.seedMockData = async () => {
-            toggleLoading(true);
-            const shopName = currentRole === 'shop' ? currentUserShopName : "ร้านทดสอบ (แอดมินเพิ่ม)";
-            
-            const mockMenus = [
-                { shopName: shopName, name: "เมนูทดสอบ 1", price: 40, isAvailable: true, startTime: "06:00", endTime: "18:00", imageUrl: "https://images.unsplash.com/photo-1626804475297-41609ea004eb?w=500&q=80", hasDelivery: true, hasPickup: true },
-                { shopName: shopName, name: "เมนูทดสอบ 2", price: 30, isAvailable: true, startTime: "06:00", endTime: "18:00", imageUrl: "https://images.unsplash.com/photo-1558857563-b37102e987c8?w=500&q=80", hasDelivery: true, hasPickup: true },
-            ];
-
-            try {
-                for (const menu of mockMenus) {
-                    await addDoc(collection(db, getCollectionPath('menus')), { ...menu, createdAt: serverTimestamp() });
-                }
-                showToast("เพิ่มข้อมูลจำลองสำเร็จ!");
-            } catch (error) {
-                console.error("Mock Data Error:", error);
-            }
-            toggleLoading(false);
-        };
 
         // --- MENUS & SHOPS ---
         const listenToMenus = () => {
